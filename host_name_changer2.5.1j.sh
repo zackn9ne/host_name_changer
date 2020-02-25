@@ -13,15 +13,17 @@ location=$(/usr/bin/curl -H "Accept: text/xml" -H "Authorization: Basic ${jssCre
 #jamf API section --------------------------------------------
 
 
-
-#get (serial for) year
+#apple support curl --------------------------------------------
+#get last four serial for year
 YEAR=$(system_profiler SPHardwareDataType | awk '/Serial/ {print $4}' | grep -o '....$')
 echo "last four is" $YEAR
 #use that (serial) for actual year
 MNF_YEAR=$(curl "https://support-sp.apple.com/sp/product?cc=`echo $YEAR`" |grep -Eo '[0-9]{4}')
 echo "determined year is" $MNF_YEAR
+#apple support curl --------------------------------------------
 
-#get model
+
+#get model info locally --------------------------------------------
 initialhweval=$(sysctl hw.model)
 if [[ $initialhweval == *"Pro"* ]];
 then
@@ -46,11 +48,13 @@ exit 1
 
     echo $model
 fi
+#get model info locally --------------------------------------------
 
-#check user 
+#check user locally --------------------------------------------
 user=$( scutil <<< "show State:/Users/ConsoleUser" | awk -F': ' '/[[:space:]]+Name[[:space:]]:/ { if ( $2 != "loginwindow" ) { print $2 }}' )
 echo "detected location is" $location
 echo "detected user is:" $user
+#check user locally --------------------------------------------
 
 #sanitize user
 user=$(echo $user | sed 's/[^a-zA-Z0-9]//g')
@@ -87,11 +91,8 @@ fi
 
 #do all of the things
 hostname="${location}-${model}-${MNF_YEAR}-${user}"
-echo $hostname
+echo "computer calculated as " $hostname
 
-
-#***testing!! 
-#read -n 1 -s -r -p "Press any key to continue"
 $jamfbinary setComputerName -name "$hostname"
 $jamfbinary recon
 
