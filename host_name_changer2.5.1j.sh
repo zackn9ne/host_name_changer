@@ -48,6 +48,10 @@ elif [[ $initialhweval == *"Air"* ]];
 then
     echo "You have a macbook air, sorry to hear that"
     model="MBA"
+elif [[ $initialhweval == *"MacBook"* ]];
+then
+    echo "You have a macbook 12"
+    model="MBA"
 elif [[ $initialhweval == *"iMac"* ]];
 then
     echo "Desktop mac"
