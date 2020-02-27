@@ -3,6 +3,20 @@
 #welcome to zackn9nes jamf hostname script
 jamfbinary=$(/usr/bin/which jamf)
 
+
+#sanity check
+if [ -z "$4" ]
+then
+	echo "you forgot to fill user/pass out in jamf"
+    exit 1
+elif [ -z "$5" ]
+then
+     echo "you forgot to put jamfpro URL in jamf"
+     exit 1
+fi
+
+
+
 #jamf API section --------------------------------------------
 jssCredsHash=$4 # hash your JamfPro username:password with base64
 jssHost=$5 #put jssurl here, include the https:// or else
@@ -11,6 +25,7 @@ fullSerialForAPI=$(ioreg -rd1 -c IOPlatformExpertDevice | awk -F'"' '/IOPlatform
 #**** query API for serial's city
 location=$(/usr/bin/curl -H "Accept: text/xml" -H "Authorization: Basic ${jssCredsHash}" "${jssHost}/JSSResource/computers/serialnumber/${fullSerialForAPI}/subset/location" | xmllint --format - 2>/dev/null | awk -F'>|<' '/<building>/{print $3}'|cut -f1 -d"@")
 #jamf API section --------------------------------------------
+
 
 
 #apple support curl --------------------------------------------
@@ -77,7 +92,7 @@ elif ((MNF_YEAR <= 2000 && MNF_YEAR >= 2030)); then
      $MNF_YEAR = ''
 elif [ -z "$location" ]
 then
-	echo "Location is broken exiting with error either set variable manually or put in $4 of jamf pro"
+	echo "Location is broken exiting with error $location"
     exit 1
 elif [ -z "$model" ]
 then
