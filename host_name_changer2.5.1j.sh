@@ -51,7 +51,7 @@ then
 elif [[ $initialhweval == *"MacBook"* ]];
 then
     echo "You have a macbook 12"
-    model="MBA"
+    model="MB"
 elif [[ $initialhweval == *"iMac"* ]];
 then
     echo "Desktop mac"
