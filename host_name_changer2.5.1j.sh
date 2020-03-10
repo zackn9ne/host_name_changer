@@ -6,6 +6,8 @@ jamfbinary=$(/usr/bin/which jamf)
 if test -f "$jamfbinary"; then
     echo "$jamfbinary exist"
     JAMFMODE=true
+    else
+    JAMFMODE=false
 fi
 
 if [ "$JAMFMODE" == true ]; then
