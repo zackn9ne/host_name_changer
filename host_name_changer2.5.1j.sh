@@ -8,7 +8,7 @@ if test -f "$jamfbinary"; then
     JAMFMODE=true
 fi
 
-if $JAMFMODE==true
+if [ "$JAMFMODE" == true ]; then
 	#sanity check
 	if [ -z "$4" ]
 	then
@@ -21,7 +21,7 @@ if $JAMFMODE==true
 	fi
 fi
 
-if $JAMFMODE==true
+if [ "$JAMFMODE" == true ]; then
 #jamf API section because location support --------------------------------------------
 jssCredsHash=$4 # hash your JamfPro username:password with base64
 jssHost=$5 #put jssurl here, include the https:// or else
@@ -30,7 +30,7 @@ fullSerialForAPI=$(ioreg -rd1 -c IOPlatformExpertDevice | awk -F'"' '/IOPlatform
 #**** query API for serial's city
 location=$(/usr/bin/curl -H "Accept: text/xml" -H "Authorization: Basic ${jssCredsHash}" "${jssHost}/JSSResource/computers/serialnumber/${fullSerialForAPI}/subset/location" | xmllint --format - 2>/dev/null | awk -F'>|<' '/<building>/{print $3}'|cut -f1 -d"@")
 #jamf API section because location support --------------------------------------------
-elif $JAMFMODE==false
+elif [ "$JAMFMODE" == false ]; then
 	echo "please set location manually"
 	$manuallocation = "NY"
 fi
@@ -116,16 +116,19 @@ else
     echo "proceeding"
 fi
 
-if JAMFMODE==true
-#do all of the things
-hostname="${location}-${model}-${MNF_YEAR}-${user}"
-echo "computer calculated as " $hostname
-
-$jamfbinary setComputerName -name "$hostname"
-$jamfbinary recon
-elif JAMFMODE==false
-#do them in a more general format
-hostname="${manuallocation}-${model}-${MNF_YEAR}-${user}"
+if [ "$JAMFMODE" == true ]; then
+	#do all of the things
+	hostname="${location}-${model}-${MNF_YEAR}-${user}"
+	echo "computer calculated as " $hostname
+	$jamfbinary setComputerName -name "$hostname"
+	$jamfbinary recon
+elif [ "$JAMFMODE" == true ]; then
+	#do them in a more general format
+	hostname="${manuallocation}-${model}-${MNF_YEAR}-${user}"
+	sudo scutil --set HostName "$hostname"
+	sudo scutil --set ComputerName "$hostname"
+	sudo scutil --set LocalHostName "$hostname"
+	dscacheutil -flushcache
 fi
 
 exit 0
