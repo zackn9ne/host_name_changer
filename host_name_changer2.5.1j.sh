@@ -1,39 +1,48 @@
 #!/bin/bash
 
+
 #welcome to zackn9nes jamf hostname script
 jamfbinary=$(/usr/bin/which jamf)
-
-
-#sanity check
-if [ -z "$4" ]
-then
-	echo "you forgot to fill user/pass out in jamf"
-    exit 1
-elif [ -z "$5" ]
-then
-     echo "you forgot to put jamfpro URL in jamf"
-     exit 1
+if test -f "$jamfbinary"; then
+    echo "$jamfbinary exist"
+    JAMFMODE=true
 fi
 
+if $JAMFMODE==true
+	#sanity check
+	if [ -z "$4" ]
+	then
+		echo "you forgot to fill user/pass out in jamf"
+	    exit 1
+	elif [ -z "$5" ]
+	then
+	     echo "you forgot to put jamfpro URL in jamf"
+	     exit 1
+	fi
+fi
 
-
-#jamf API section --------------------------------------------
+if $JAMFMODE==true
+#jamf API section because location support --------------------------------------------
 jssCredsHash=$4 # hash your JamfPro username:password with base64
 jssHost=$5 #put jssurl here, include the https:// or else
 #**** get the endpoints serial 
 fullSerialForAPI=$(ioreg -rd1 -c IOPlatformExpertDevice | awk -F'"' '/IOPlatformSerialNumber/{print $4}')
 #**** query API for serial's city
 location=$(/usr/bin/curl -H "Accept: text/xml" -H "Authorization: Basic ${jssCredsHash}" "${jssHost}/JSSResource/computers/serialnumber/${fullSerialForAPI}/subset/location" | xmllint --format - 2>/dev/null | awk -F'>|<' '/<building>/{print $3}'|cut -f1 -d"@")
-#jamf API section --------------------------------------------
+#jamf API section because location support --------------------------------------------
+elif $JAMFMODE==false
+	echo "please set location manually"
+	$manuallocation = "NY"
+fi
 
 
 
-#apple support curl --------------------------------------------
+#apple curl because year --------------------------------------------
 #get last four serial for year
-YEAR=$(system_profiler SPHardwareDataType | awk '/Serial/ {print $4}' | grep -o '....$')
-echo "last four is" $YEAR
+lastFourSerialForAPPL=$(system_profiler SPHardwareDataType | awk '/Serial/ {print $4}' | grep -o '....$')
+echo "last four is" $lastFourSerialForAPPL
 #use that (serial) for actual year
-MNF_YEAR=$(curl "https://support-sp.apple.com/sp/product?cc=`echo $YEAR`" |grep -Eo '[0-9]{4}')
+MNF_YEAR=$(curl "https://support-sp.apple.com/sp/product?cc=`echo $lastFourSerialForAPPL`" |grep -Eo '[0-9]{4}')
 echo "determined year is" $MNF_YEAR
 #apple support curl --------------------------------------------
 
@@ -107,12 +116,16 @@ else
     echo "proceeding"
 fi
 
-
+if JAMFMODE==true
 #do all of the things
 hostname="${location}-${model}-${MNF_YEAR}-${user}"
 echo "computer calculated as " $hostname
 
 $jamfbinary setComputerName -name "$hostname"
 $jamfbinary recon
+elif JAMFMODE==false
+#do them in a more general format
+hostname="${manuallocation}-${model}-${MNF_YEAR}-${user}"
+fi
 
 exit 0
