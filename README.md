@@ -2,7 +2,7 @@
 This changes your macOS hostname based on machine year, and last user
 
 # If not on JAMF
-curl https://raw.githubusercontent.com/zackn9ne/host_name_changer/master/host_name_changer2.5.1j.sh > host-name-changer.sh
+`curl https://raw.githubusercontent.com/zackn9ne/host_name_changer/master/host_name_changer2.5.1j.sh > host-name-changer.sh && sh host-name-changer.sh`
 
 # If on JAMF (JSS) 
 - put this in your scripts
