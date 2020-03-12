@@ -144,6 +144,14 @@ elif [ "$JAMFMODE" == false ]; then
 	sudo scutil --set ComputerName "$hostname"
 	sudo scutil --set LocalHostName "$hostname"
 	dscacheutil -flushcache
+	while true; do
+	    read -p "Do you wish to delete this program off the disk?" yn
+	    case $yn in
+		[Yy]* ) rm host-name-changer.sh; break;;
+		[Nn]* ) exit;;
+		* ) echo "Please answer yes or no.";;
+	    esac
+	done
 fi
 
 exit 0
