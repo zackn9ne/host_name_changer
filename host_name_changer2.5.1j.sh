@@ -2,12 +2,22 @@
 
 
 #welcome to zackn9nes jamf hostname script
+function pause(){
+   read -p "$*"
+}
+
+
 jamfbinary=$(/usr/bin/which jamf)
 if test -f "$jamfbinary"; then
     echo "$jamfbinary exist"
     JAMFMODE=true
+
+
     else
+    echo "native mode"
     JAMFMODE=false
+pause 'Press [Enter] key to continue...'
+
 fi
 
 if [ "$JAMFMODE" == true ]; then
@@ -23,18 +33,19 @@ if [ "$JAMFMODE" == true ]; then
 	fi
 fi
 
+
 if [ "$JAMFMODE" == true ]; then
-#jamf API section because location support --------------------------------------------
-jssCredsHash=$4 # hash your JamfPro username:password with base64
-jssHost=$5 #put jssurl here, include the https:// or else
-#**** get the endpoints serial 
-fullSerialForAPI=$(ioreg -rd1 -c IOPlatformExpertDevice | awk -F'"' '/IOPlatformSerialNumber/{print $4}')
-#**** query API for serial's city
-location=$(/usr/bin/curl -H "Accept: text/xml" -H "Authorization: Basic ${jssCredsHash}" "${jssHost}/JSSResource/computers/serialnumber/${fullSerialForAPI}/subset/location" | xmllint --format - 2>/dev/null | awk -F'>|<' '/<building>/{print $3}'|cut -f1 -d"@")
-#jamf API section because location support --------------------------------------------
+    #jamf API section because location support --------------------------------------------
+    jssCredsHash=$4 # hash your JamfPro username:password with base64
+    jssHost=$5 #put jssurl here, include the https:// or else
+    #**** get the endpoints serial 
+    fullSerialForAPI=$(ioreg -rd1 -c IOPlatformExpertDevice | awk -F'"' '/IOPlatformSerialNumber/{print $4}')
+    #**** query API for serial's city
+    location=$(/usr/bin/curl -H "Accept: text/xml" -H "Authorization: Basic ${jssCredsHash}" "${jssHost}/JSSResource/computers/serialnumber/${fullSerialForAPI}/subset/location" | xmllint --format - 2>/dev/null | awk -F'>|<' '/<building>/{print $3}'|cut -f1 -d"@")
+    #jamf API section because location support --------------------------------------------
 elif [ "$JAMFMODE" == false ]; then
-	echo "please set location manually"
-	$manuallocation = "NY"
+    manuallocation="NY"
+    echo "setting location manually to $manuallocation"
 fi
 
 
@@ -82,7 +93,9 @@ fi
 
 #check user locally --------------------------------------------
 user=$( scutil <<< "show State:/Users/ConsoleUser" | awk -F': ' '/[[:space:]]+Name[[:space:]]:/ { if ( $2 != "loginwindow" ) { print $2 }}' )
-echo "detected location is" $location
+if [ "$JAMFMODE" == true ]; then
+    echo "detected location is" $location
+fi
 echo "detected user is:" $user
 #check user locally --------------------------------------------
 
@@ -105,9 +118,9 @@ then
 elif ((MNF_YEAR <= 2000 && MNF_YEAR >= 2030)); then
      echo "year is out of range just giving up on the year"
      $MNF_YEAR = ''
-elif [ -z "$location" ]
+elif [ -z "$location" ] && [ "$JAMFMODE" == true ];
 then
-	echo "Location is broken exiting with error $location"
+	echo "Location is broken for JamfMode exiting with error $location"
     exit 1
 elif [ -z "$model" ]
 then
@@ -124,7 +137,7 @@ if [ "$JAMFMODE" == true ]; then
 	echo "computer calculated as " $hostname
 	$jamfbinary setComputerName -name "$hostname"
 	$jamfbinary recon
-elif [ "$JAMFMODE" == true ]; then
+elif [ "$JAMFMODE" == false ]; then
 	#do them in a more general format
 	hostname="${manuallocation}-${model}-${MNF_YEAR}-${user}"
 	sudo scutil --set HostName "$hostname"
