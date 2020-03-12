@@ -4,6 +4,8 @@ This changes your macOS hostname based on machine year, and last user
 # If not on JAMF
 - basically download and run, depending on how you run you may need `sudo`
 - when script completes it asks you if you want to erase the proggie off of the disk, that's up to you
+- shortcut to downloading and running in case you are lazy:
+
 `curl https://raw.githubusercontent.com/zackn9ne/host_name_changer/master/host_name_changer2.5.1j.sh > host-name-changer.sh && sh host-name-changer.sh`
 
 # If on JAMF (JSS) 
