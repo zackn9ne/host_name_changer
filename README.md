@@ -1,7 +1,7 @@
 # Zackn9nez Host Name Changer 2.5.1
 This changes your macOS hostname based on machine year, and last user
 
-# If not on JAMF
+# If NOT on JAMF, location hardcodes to NY
 - basically download and run, depending on how you run you may need `sudo`
 - when script completes it asks you if you want to erase the proggie off of the disk, that's up to you
 - shortcut to downloading and running in case you are lazy:
