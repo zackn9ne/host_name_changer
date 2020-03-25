@@ -6,8 +6,8 @@
 #put hashed username:pass in $4 base64
 #put jssurl in $5, include the https:// or else
 #if jamf is not on the target host it will run in native mode so ignore the above 2 things
-#if not using with jamf set manuallocation immediatly here and you don't have to touch anything else
-manuallocation="NY"
+#if not using with jamf set MANUALLOCATION immediatly here and you don't have to touch anything else
+MANUALLOCATION="NY"
 
 #jamfmode logic
 jamfbinary=$(/usr/bin/which jamf)
@@ -43,11 +43,11 @@ if [ "$JAMFMODE" == true ]; then
     location=$(/usr/bin/curl -H "Accept: text/xml" -H "Authorization: Basic ${jssCredsHash}" "${jssHost}/JSSResource/computers/serialnumber/${fullSerialForAPI}/subset/location" | xmllint --format - 2>/dev/null | awk -F'>|<' '/<building>/{print $3}'|cut -f1 -d"@")
     echo "detected JSS location is" $location
 elif [ "$JAMFMODE" == false ]; then
-    if [ -z "$manuallocation" ]
+    if [ -z "$MANUALLOCATION" ]
 	    then
 	    echo "you forgot to set a manual location"
 	    else
-	    echo "setting location manually to $manuallocation"
+	    echo "setting location manually to $MANUALLOCATION"
     fi
 fi
 
@@ -131,7 +131,7 @@ if [ "$JAMFMODE" == true ]; then
 	$jamfbinary recon
 elif [ "$JAMFMODE" == false ]; then
 	#do them in a more general format
-	hostname="${manuallocation}-${model}-${MNF_YEAR}-${user}"
+	hostname="${MANUALLOCATION}-${model}-${MNF_YEAR}-${user}"
 	echo "hostname will be: ${hostname}"
 	read -p 'Press [Enter] key to proceed...'
 	sudo scutil --set HostName "$hostname"
