@@ -6,8 +6,7 @@
 #put hashed username:pass in $4 base64
 #put jssurl in $5, include the https:// or else
 #if jamf is not on the target host it will run in native mode so ignore the above 2 things
-#if not using with jamf set MANUALLOCATION immediatly here and you don't have to touch anything else
-MANUALLOCATION="NY"
+#if not using with jamf set MANUALLOCATION prompts you on readline
 
 #jamfmode logic
 jamfbinary=$(/usr/bin/which jamf)
@@ -15,8 +14,11 @@ if test -f "$jamfbinary"; then
     echo "$jamfbinary exist"
     JAMFMODE=true
 else
-	echo "no jamf mode"
+	echo "no JAMF found on system"
 	JAMFMODE=false
+    read -p "Enter your location manually default [NY]: " MANUALLOCATION
+    MANUALLOCATION=${MANUALLOCATION:-NY}
+    echo $MANUALLOCATION
 fi
 
 #jss variables set?
