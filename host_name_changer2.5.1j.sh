@@ -44,10 +44,11 @@ if [ "$JAMFMODE" == true ]; then
     echo "detected JSS location is" $location
 elif [ "$JAMFMODE" == false ]; then
     if [ -z "$manuallocation" ]
-    then
-    echo "you forgot to set a manual location"
-    else
-    echo "setting location manually to $manuallocation"
+	    then
+	    echo "you forgot to set a manual location"
+	    else
+	    echo "setting location manually to $manuallocation"
+    fi
 fi
 
 #curl apples machine db against last 4 of serial
