@@ -7,7 +7,7 @@
 #put jssurl in $5, include the https:// or else
 #if jamf is not on the target host it will run in native mode so ignore the above 2 things
 #if not using with jamf set manuallocation immediatly here and you don't have to touch anything else
-manuallocation = "NY"
+manuallocation="NY"
 
 #jamfmode logic
 jamfbinary=$(/usr/bin/which jamf)
