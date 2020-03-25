@@ -2,24 +2,26 @@
 
 
 #welcome to zackn9nes jamf hostname script
+#if using with JSS make a policy
+#put hashed username:pass in $4 base64
+#put jssurl in $5, include the https:// or else
+#if jamf is not on the target host it will run in native mode so ignore the above 2 things
+
 function pause(){
    read -p "$*"
 }
 
-
+#jamfmode logic
 jamfbinary=$(/usr/bin/which jamf)
 if test -f "$jamfbinary"; then
     echo "$jamfbinary exist"
     JAMFMODE=true
-
-
-    else
-    echo "native mode"
-    JAMFMODE=false
-pause 'Press [Enter] key to continue...'
-
+else
+	echo "no jamf mode"
+	JAMFMODE=false
 fi
 
+#jss variables set?
 if [ "$JAMFMODE" == true ]; then
 	#sanity check
 	if [ -z "$4" ]
@@ -33,113 +35,103 @@ if [ "$JAMFMODE" == true ]; then
 	fi
 fi
 
-
+#jamf API subset/location 
 if [ "$JAMFMODE" == true ]; then
-    #jamf API section because location support --------------------------------------------
     jssCredsHash=$4 # hash your JamfPro username:password with base64
     jssHost=$5 #put jssurl here, include the https:// or else
     #**** get the endpoints serial 
     fullSerialForAPI=$(ioreg -rd1 -c IOPlatformExpertDevice | awk -F'"' '/IOPlatformSerialNumber/{print $4}')
     #**** query API for serial's city
     location=$(/usr/bin/curl -H "Accept: text/xml" -H "Authorization: Basic ${jssCredsHash}" "${jssHost}/JSSResource/computers/serialnumber/${fullSerialForAPI}/subset/location" | xmllint --format - 2>/dev/null | awk -F'>|<' '/<building>/{print $3}'|cut -f1 -d"@")
-    #jamf API section because location support --------------------------------------------
+    echo "detected JSS location is" $location
 elif [ "$JAMFMODE" == false ]; then
     manuallocation="NY"
     echo "setting location manually to $manuallocation"
 fi
 
-
-
-#apple curl because year --------------------------------------------
+#curl apples machine db against last 4 of serial
 #get last four serial for year
 lastFourSerialForAPPL=$(system_profiler SPHardwareDataType | awk '/Serial/ {print $4}' | grep -o '....$')
 echo "last four is" $lastFourSerialForAPPL
 #use that (serial) for actual year
 MNF_YEAR=$(curl "https://support-sp.apple.com/sp/product?cc=`echo $lastFourSerialForAPPL`" |grep -Eo '[0-9]{4}')
 echo "determined year is" $MNF_YEAR
-#apple support curl --------------------------------------------
 
-
-#get model info locally --------------------------------------------
+#get machines info locally
 initialhweval=$(sysctl hw.model)
 if [[ $initialhweval == *"Pro"* ]];
 then
-    echo "Pro detected proceeding to eval model type"
+    echo "Model: MBP"
     model="MBP"
 elif [[ $initialhweval == *"Air"* ]];
 then
-    echo "You have a macbook air, sorry to hear that"
+    echo "Model: MBA"
     model="MBA"
 elif [[ $initialhweval == *"MacBook"* ]];
 then
-    echo "You have a macbook 12"
+    echo "Model: MB12 aka MB"
     model="MB"
 elif [[ $initialhweval == *"iMac"* ]];
 then
-    echo "Desktop mac"
+    echo "Model: iMac"
     model="iMac"
 elif [[ $initialhweval == *"mini"* ]];
 then
-    echo "Desktop mac"
+    echo "Model: mini"
     model="Mini"
 elif [ -z "$initialhweval" ];
 then
     echo "computer unknown"
 exit 1
 
-    echo $model
+    echo "Found a ${model}"
 fi
-#get model info locally --------------------------------------------
 
-#check user locally --------------------------------------------
+#check user locally
 user=$( scutil <<< "show State:/Users/ConsoleUser" | awk -F': ' '/[[:space:]]+Name[[:space:]]:/ { if ( $2 != "loginwindow" ) { print $2 }}' )
-if [ "$JAMFMODE" == true ]; then
-    echo "detected location is" $location
-fi
 echo "detected user is:" $user
-#check user locally --------------------------------------------
 
 #sanitize user
 user=$(echo $user | sed 's/[^a-zA-Z0-9]//g')
 
-#killswitch
+#killswitch Error:
 if [ -z "$user" ]
 then
-	echo "user is null exiting with error"
+	echo "Error: user is null exiting with error"
     exit 1
 elif [ $user = "root" ]
 then
-     echo "user is root user failing gracefully"
+     echo "Error: user is root user failing gracefully"
      exit 1
 elif [ $user = "splash" ]
 then
-     echo "user is splash user failing gracefully"
+     echo "Error: user is splash user failing gracefully"
      exit 1
 elif ((MNF_YEAR <= 2000 && MNF_YEAR >= 2030)); then
      echo "year is out of range just giving up on the year"
      $MNF_YEAR = ''
 elif [ -z "$location" ] && [ "$JAMFMODE" == true ];
 then
-	echo "Location is broken for JamfMode exiting with error $location"
+	echo "Error: Location is broken for JamfMode exiting with error $location"
     exit 1
 elif [ -z "$model" ]
 then
-	echo "Model is broken exiting with error"
+	echo "Error: Model is broken exiting with error"
     exit 1
-
-else
-    echo "proceeding"
 fi
 
+#do all of the things
 if [ "$JAMFMODE" == true ]; then
-	#do all of the things
+	#do all of the things JAMF
 	hostname="${location}-${model}-${MNF_YEAR}-${user}"
-	echo "computer calculated as " $hostname
+	echo "hostname will be: ${hostname}"
 	$jamfbinary setComputerName -name "$hostname"
 	$jamfbinary recon
 elif [ "$JAMFMODE" == false ]; then
 	#do them in a more general format
 	hostname="${manuallocation}-${model}-${MNF_YEAR}-${user}"
+	echo "hostname will be: ${hostname}"
+	pause 'Press [Enter] key to proceed...'
 	sudo scutil --set HostName "$hostname"
 	sudo scutil --set ComputerName "$hostname"
 	sudo scutil --set LocalHostName "$hostname"
