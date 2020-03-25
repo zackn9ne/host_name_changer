@@ -18,3 +18,4 @@ This changes your macOS hostname based on machine year, and last user
 - put JSSURL in $5 of the policy, include the https:// or else
 - no need to recon after, script recons after all changes made, it is an inventory script after all
 
+![stuff](https://raw.githubusercontent.com/zackn9ne/host_name_changer/master/Screen%20Shot%202020-03-25%20at%202.12.59%20PM.png)
