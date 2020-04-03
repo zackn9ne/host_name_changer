@@ -14,7 +14,7 @@ This changes your macOS hostname based on machine year, and last user
 # Run on JAMF (JSS) 
 - put this in your scripts
 - make a policy and call this script
-- hash your JamfPro username:password with base64 and put it in $4 of the policy
+- hash your JamfPro username:password with base64 and put it in $4 of the policy (https://www.base64encode.org/) is a good site
 - put JSSURL in $5 of the policy, include the https:// or else
 - no need to recon after, script recons after all changes made, it is an inventory script after all
 
