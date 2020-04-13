@@ -71,9 +71,17 @@ elif [[ $initialhweval == *"Air"* ]];
 then
     echo "Model: MBA"
     model="MBA"
-elif [[ $initialhweval == *"MacBook"* ]];
+elif [[ $initialhweval == *"MacBook8"* ]];
 then
-    echo "Model: MB12 aka MB"
+    echo "Model: MB12"
+    model="MB"
+elif [[ $initialhweval == *"MacBook9"* ]];
+then
+    echo "Model: MB12"
+    model="MB"
+elif [[ $initialhweval == *"MacBook10"* ]];
+then
+    echo "Model: MB12"
     model="MB"
 elif [[ $initialhweval == *"iMac"* ]];
 then
