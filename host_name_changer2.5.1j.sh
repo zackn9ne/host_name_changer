@@ -10,6 +10,7 @@ LOCATION="NY"
 #jamfmode logic
 JAMFBINARY=$(/usr/bin/which jamf)
 if test -f "$JAMFBINARY"; then
+    JAMFMODE=true
     echo "$JAMFBINARY exists looking for location var in $4"
     LOCATION="$4"
 fi
@@ -91,7 +92,7 @@ if [ "$JAMFMODE" == true ]; then
     echo "hostname will be: ${HOSTNAME}"
     $JAMFBINARY setComputerName -name "$HOSTNAME"
     $JAMFBINARY recon
-elif [ "$JAMFMODE" == false ]; then
+elif [ "$JAMFMODE" != true ]; then
     #do all of the things in a general format
     echo "hostname will be: ${HOSTNAME}"
     sudo scutil --set HostName "$HOSTNAME"
